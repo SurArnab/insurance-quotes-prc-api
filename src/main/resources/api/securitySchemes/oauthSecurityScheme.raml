@@ -1,0 +1,11 @@
+#%RAML 1.0 SecurityScheme
+type: x-customSecurity
+describedBy:
+  headers:
+    Authorization: 
+      example:
+        Bearer 2e123aca12
+      description: Use Bearer Token to connect to the endpoint which can be received via account token
+  responses:
+    401:
+      description: "Unauthorized Access"

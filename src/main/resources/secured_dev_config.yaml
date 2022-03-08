@@ -1,0 +1,20 @@
+http:
+  host: "![Aczk3jKuF6/OI0xuRqPMUQ==]"
+  port: "![RqkbqUdKL0I=]"
+
+salesforce:
+  host: "![sLUox50VvJpvx4pmsoXMcPY5kBm1dZ6vuEfL6OdANO3/j/46uTAV2v9i4tAOFQ7n]"
+  port: "![xmyPQr7waPU=]"
+  basepath: "![e46nd0Tx2M0=]"
+
+database:
+  host: "![sLUox50VvJr2Xhl4Nt5+0MkEAjI2Yg3s/fe0Qk4yB1q1pU8CZelpQHG9Z/3j6x5k]"
+  port: "![xmyPQr7waPU=]"
+  basepath: "![e46nd0Tx2M0=]"
+
+externalapi:
+  host: "![sLUox50VvJocyJ/sCDfln/DcII5w8KaCzvI/UORvUxQylt75esbLvb8pA4npvjPZWMgpM/22ugo=]"
+  port: "![xmyPQr7waPU=]"
+
+api:
+  autodiscovery: "![kHMJzH8jd8tzcpiECCMteg==]"

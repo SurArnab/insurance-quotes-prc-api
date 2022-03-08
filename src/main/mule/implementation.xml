@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="processPolicy" doc:id="e22ad047-8bf1-4ed3-bb8b-09e6117ec0ba" >
+		<ee:transform doc:name="DW policy table map" doc:id="67cd8294-3d40-4bb7-bb45-22895c8c9494">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	policyno: payload01.policyno,
+	customerid: vars.customerid as Number,
+	premium: payload01.premium,
+	coverage: payload01.coverage,
+	tenure: payload01.tenure
+}]]></ee:set-payload>
+							</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="outputData" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+						</ee:transform>
+		<choice doc:name="check where to insert" doc:id="7acaa6ab-9cf5-4c18-a19b-769624fcfec3">
+							<when expression="#[vars.source == 'Salesforce']">
+								<http:request method="POST" doc:name="create salesforce policy Request" doc:id="1904886e-7e1b-4a61-bb34-cb1ca8417d58" config-ref="Salesforce_sysapi_Request" path="/policies" />
+							</when>
+							<otherwise>
+								<http:request method="POST" doc:name="create database policy Request" doc:id="b4381c19-4233-4c07-9520-2df9d0f9f4a0" config-ref="database_sysapi_Request" path="/policies" />
+							</otherwise>
+						</choice>
+	</sub-flow>
+	<sub-flow name="processPayload" doc:id="f3f9e490-bcc2-408c-83cd-beea30bebce3" >
+		<ee:transform doc:name="DW customer details" doc:id="d1d7b84e-7662-41b8-9b80-838eadcfd1b8">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+flatten(payload..payload) map(item, index) ->
+	{
+		"data" : item,
+		"source" : if(index==0) "Database" else "Salesforce"
+	}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="DW filter blank response" doc:id="be634561-f1e4-460f-b805-12d4801012ca">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload filter ($.data != '')]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="DW filter null response" doc:id="cd9f59e3-aeb5-4ab9-8419-936257a495b6">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload filter ($.data != null)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="customer Logger" doc:id="4c356a64-2d95-4ae4-ad93-447f7c893a59" message="Customer Data #[payload]"/>
+		<set-variable value="#[payload[0].data]" doc:name="Set Payload" doc:id="34882dd2-b508-4be2-9eb9-6245c8116a71" variableName="inputData"/>
+		<set-variable value="#[payload[0].source]" doc:name="Set source" doc:id="0e998574-21f8-4406-8ca0-1e3068595ef4" variableName="source"/>
+	</sub-flow>
+	<flow name="getQuotes" doc:id="4b880fbf-6f88-43ce-86d1-108020888a02" >
+		<logger level="INFO" doc:name="start Logger" doc:id="eebca45d-3ffb-4dbe-818b-a9b41d6f2596" message="Start of get quotes service for customer id #[attributes.uriParams.customerid]"/>
+		<set-variable value="#[attributes.uriParams.customerid]" doc:name="Set customer id" doc:id="90c19aa1-6c6a-4b4a-a10e-eda07a5c1091" variableName="customerid"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="23ab6acd-ddb9-4167-89fa-a92deb1fae51" timeout="60000" maxConcurrency="1">
+			<route >
+				<try doc:name="Try" doc:id="2d7b862c-8be6-4414-be67-604e96cda3c4" >
+					<http:request method="GET" doc:name="database Request" doc:id="f9f1a558-5d5d-4235-93a1-46d5533f013a" config-ref="database_sysapi_Request" path="/customers/{customerid}">
+					<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"customerid" : vars.customerid
+}]]]></http:uri-params>
+				</http:request>
+					<logger level="INFO" doc:name="response Logger" doc:id="ae146133-177a-4473-916e-ec50d19e3c6d" message='"Response from database " #[payload] '/>
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c998add0-5230-405c-9572-84830d35bb68" >
+							<logger level="INFO" doc:name="Databse error Logger" doc:id="914876b1-8a5e-4ebe-9cfa-d06c7adb7896" message="#[error.description]" />
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</route>
+			<route >
+				<try doc:name="Try" doc:id="6b321c30-f965-4c21-90c1-5bb3c10c9e06" >
+					<http:request method="GET" doc:name="Salesforce Request" doc:id="f011b6f0-81d3-4547-8150-160515363243" config-ref="Salesforce_sysapi_Request" path="/customers/{customerid}">
+					<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"customerid" : vars.customerid
+}]]]></http:uri-params>
+				</http:request>
+					<logger level="INFO" doc:name="response Logger" doc:id="7eb105d5-5bd1-4521-ad50-67e6b67b7ed5" message="Response received from salesforce #[payload]"/>
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c2972147-6702-4b4a-9b15-2cf88c432fad" >
+							<logger level="INFO" doc:name="salesforce error Logger" doc:id="f561f567-68ff-406f-a242-8a177a884ac8" message="#[error.description]"/>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</route>
+		</scatter-gather>
+		<flow-ref doc:name="processPayload" doc:id="3ace7fe6-8238-4f38-97d5-454f30d8bb54" name="processPayload" />
+		<choice doc:name="Verify Customer exist" doc:id="3df02c89-d0d7-48e5-b663-925006f4c1bb" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<logger level="INFO" doc:name="external api Logger" doc:id="33e68cdc-4c63-4214-9d90-abf755a01b31" message="Start of external API for customer id #[vars.customerid]"/>
+				<http:request method="GET" doc:name="external system Request" doc:id="01c9aa08-5a50-4855-bdbc-af01fb21e8b6" config-ref="external_system_Request" path="/getPolicy">
+					<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"illness" : payload[0].data.illness,
+	"age" : payload[0].data.age,
+	"salary" : payload[0].data.salary,
+	"smoking" : payload[0].data.smoking,
+	"drinking" : payload[0].data.drinking
+}]]]></http:query-params>
+				</http:request>
+				<choice doc:name="Verify policy exist" doc:id="a4ad9a1f-a5da-47a9-93a9-ab616ed02bac">
+					<when expression='#[payload.message == null]'>
+						<logger level="INFO" doc:name="policy data Logger" doc:id="f006a904-6876-4a74-88ab-63f1dd22b668" message="Policy details received #[payload]" />
+						<ee:transform doc:name="DW quote Map" doc:id="01df6601-4041-4c59-bef6-d8a498bcd5f9">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+import java!org::insurance::utils::Utility
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	customerid: vars.inputData.customerid,
+	name: vars.inputData.name,
+	contactnumber: vars.inputData.contactnumber,
+	age: vars.inputData.age,
+	smoking: vars.inputData.smoking,
+	drinking: vars.inputData.drinking,
+	illness: vars.inputData.illness,
+	salary: vars.inputData.salary,
+	policyno: payload01.policyno,
+	description: payload01.description,
+	coverage: payload01.coverage,
+	tenure: (payload01.premiumage + vars.inputData.age as Number),
+	premium: Utility::calcPremium(payload01.basepremium, payload01.minage, vars.inputData.age, 
+		payload01.surgeyears, payload01.agesurge, vars.inputData.smoking, payload01.smokingsurge, 
+		vars.inputData.drinking, payload01.drinkingsurge, vars.inputData.illness, payload01.illnesssurge
+	) as Number, 
+	provider: payload01.provider
+}]]></ee:set-payload>
+					</ee:message>
+							<ee:variables >
+							</ee:variables>
+				</ee:transform>
+						<logger level="INFO" doc:name="quote Logger" doc:id="1478afb6-b19d-40e8-95d7-7f248e8db028" message="Quote Data #[payload]"/>
+						<flow-ref doc:name="processPolicy" doc:id="bec2cf93-4167-4916-b164-61acd1310d7a" name="processPolicy" />
+						<set-payload value="#[vars.outputData]" doc:name="Set output data to payload" doc:id="6c6cbdc0-edd6-48ba-b2cf-b539b1d4f5c9" />
+						<logger level="INFO" doc:name="response Logger" doc:id="c1d6361a-2f8b-4042-bb0b-580a7e197dd7" message="Data to send #[payload]"/>
+					</when>
+					<otherwise >
+						<ee:transform doc:name="DW no policy found" doc:id="e99ceadf-fe28-48c7-8f09-3dcdfb29ed6b" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "StatusCode": "400",
+  "ErrorMessage": "No policy found for customer id " ++ vars.customerid
+}]]></ee:set-payload>
+							</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="httpStatus" ><![CDATA[400]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="DW no customer found" doc:id="82bd6b2b-2bf5-41f8-bc81-b6e012fbc051" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "StatusCode": "400",
+  "ErrorMessage": "No customer found for customer id " ++ vars.customerid
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="End Logger" doc:id="127d25be-c2e9-4a8d-b702-69123473622e" message="End of get quotes service for customer id #[vars.customerid]"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4ac580e8-a57c-4ecf-bb25-b58f8e4b2988" type="HTTP:BAD_GATEWAY, HTTP:BAD_REQUEST, HTTP:FORBIDDEN, HTTP:PARSING">
+				<logger level="INFO" doc:name="error Logger" doc:id="866090c2-0b56-499d-805d-64f8872289de" message="HTTP ERROR - #[error.description]"/>
+				<ee:transform doc:name="DW error Map" doc:id="f9780d25-e109-4489-841a-d0bc6e1fd2d3" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "StatusCode": "400",
+  "ErrorMessage": "Bad Request " ++ error.description as String
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="d33fbed0-c2cb-45b4-8276-425ae61f3be2" type="HTTP:CLIENT_SECURITY, HTTP:CONNECTIVITY, HTTP:RETRY_EXHAUSTED, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNSUPPORTED_MEDIA_TYPE" >
+				<logger level="INFO" doc:name="error Logger" doc:id="6ac26744-c51b-4848-9a20-154d0f3a0c1a" message="HTTP ERROR - #[error.description]" />
+				<ee:transform doc:name="DW error Map" doc:id="343ca347-2d5b-4497-aa5b-ee975ab346b4" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "StatusCode": "408",
+  "ErrorMessage": "Timeout " ++ error.description as String
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[408]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="8f8210e9-3a4f-4a1d-89da-828f0d828d71" type="HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:SECURITY, HTTP:SERVICE_UNAVAILABLE, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED" >
+				<logger level="INFO" doc:name="error Logger" doc:id="5d0ed124-fb2d-45c7-9e36-5b2efbd3b4ba" message="HTTP ERROR - #[error.description]" />
+				<ee:transform doc:name="DW error Map" doc:id="289d20f9-0741-41c0-b577-297c27f88f6d" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "StatusCode": "500",
+  "ErrorMessage": error.description as String
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[500]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4ca62870-3675-4151-a8b9-fbf06ac8961c">
+				<logger level="INFO" doc:name="error Logger" doc:id="56a90bab-875a-4fbb-ad00-71fbe36cf757" message="Other ERROR - #[error.description]" />
+				<ee:transform doc:name="DW error Map" doc:id="0f817f77-66af-4395-82d7-98922d5f514c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "StatusCode": "500",
+  "ErrorMessage": error.description as String
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[500]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>

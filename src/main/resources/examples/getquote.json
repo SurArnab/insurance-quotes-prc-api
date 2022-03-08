@@ -1,0 +1,34 @@
+[
+  {
+    "customerid" : 1,
+    "name" : "Arnab Sur",
+    "contactnumber" : "9876543120",
+    "age" : 31,
+    "smoking": "No",
+    "drinking" : "Yes",
+    "illness" : "No",
+    "salary" : 100000,
+    "policyno" : 123456,
+    "description": "LIC Policy",
+    "coverage" : 10000000.00,
+    "tenure" : 30,
+    "premium" : 10000,
+    "provider" : "LIC"
+  },
+  {
+    "customerid" : 1,
+    "name" : "Arnab Sur",
+    "contactnumber" : "9876543120",
+    "age" : 31,
+    "smoking": "No",
+    "drinking" : "Yes",
+    "illness" : "No",
+    "salary" : 100000,
+    "policyno" : 123458,
+    "description": "HDFC ERGO",
+    "coverage" : 12000000.00,
+    "tenure" : 35,
+    "premium" : 12000,
+    "provider" : "HDFC ERGO"
+  } 
+]

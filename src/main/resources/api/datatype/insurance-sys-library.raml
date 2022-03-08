@@ -1,0 +1,45 @@
+#%RAML 1.0 Library
+usage: Data type for insurance system api
+
+types:
+  customer:
+    properties:
+      customerid:
+        type: number
+        example: 1
+      name:
+      contactnumber:
+      age:
+        type: number
+      smoking:
+        type: string
+        enum:
+          - Yes
+          - No
+      drinking:
+        type: string
+        enum:
+          - Yes
+          - No
+      illness:
+        type: string
+        enum:
+          - Yes
+          - No
+      salary:
+        type: number
+        example:
+          100000
+      policyno:
+        type: number
+      description?:
+      coverage:
+        type: number
+        example: 1000000.00
+      tenure:
+        type : number
+        example: 70
+      premium:
+        type: number
+        example: 12311.12
+      provider:

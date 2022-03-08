@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="Insurance-Process-API-test-suite.xml" />
+	<munit:test name="Insurance-Process-API-test-suite-get:\quotes\(customerid):endtoend" doc:id="8e9f3b88-9409-499a-8e43-70c5e16846f3" description="Test">
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="69398008-142b-4cc8-a75d-311581fe70bd" >
+				<munit:attributes value='#[&#10;	{&#10;		"uriParams": &#10;		{&#10;			"customerid" : 3&#10; 		}&#10;	}&#10;]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\quotes\(customerid):Insurance-Process-API-config" doc:id="d599b85b-0fc4-4938-9fe4-4e1b4a0b4ee8" name="get:\quotes\(customerid):Insurance-Process-API-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert expression" doc:id="5df81eb5-2303-4355-957c-cf2077058618" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload[0].customerid must notBeNull()]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="Insurance-Process-API-test-suiteTest:salesforce" doc:id="da4a1784-c334-4d1a-a5a7-1612c839a4cc" >
+		<munit:execution>
+			<munit:set-event doc:name="Set Event" doc:id="c539701f-ed13-4554-bc8e-d9ca8de25bee">
+				<munit:attributes value='#[&#10;	{&#10;		"uriParams": &#10;		{&#10;			"customerid" : 1&#10; 		}&#10;	}&#10;]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\quotes\(customerid):Insurance-Process-API-config" doc:id="a9ccaea2-4bdc-479e-b86c-0892f00ed491" name="get:\quotes\(customerid):Insurance-Process-API-config" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert expression" doc:id="b8691d07-7ee2-4076-86ed-3bac40afa8df" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload[0].customerid must notBeNull()]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="Insurance-Process-API-test-suiteTest:salesforceNoPolicy" doc:id="010a78ec-f8a5-487d-9e3e-72e0fa808663">
+			<munit:execution>
+				<munit:set-event doc:name="Set Event" doc:id="18a076ef-e86f-408b-a346-95035ab5a9c9">
+				<munit:attributes value='#[&#10;	{&#10;		"uriParams": &#10;		{&#10;			"customerid" : 9&#10; 		}&#10;	}&#10;]' />
+				</munit:set-event>
+				<flow-ref doc:name="Flow-ref to get:\quotes\(customerid):Insurance-Process-API-config" doc:id="3f53467d-3bc1-4da9-be15-e1c0dd71c982" name="get:\quotes\(customerid):Insurance-Process-API-config" />
+			</munit:execution>
+			<munit:validation>
+				<munit-tools:assert doc:name="Assert expression" doc:id="7a54475b-695d-4892-a7e6-dcfbc7f3b6a7">
+					<munit-tools:that><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload.message must notBeNull()]]]></munit-tools:that>
+				</munit-tools:assert>
+			</munit:validation>
+		</munit:test>
+	<munit:test name="Insurance-Process-API-test-suiteTest:salesforceNoCustomer" doc:id="c38d320f-b41b-47dd-8b97-ab9b0df8817e">
+			<munit:execution>
+				<munit:set-event doc:name="Set Event" doc:id="971a43d7-b75b-43b1-a1b0-8a7dd8e5c486">
+				<munit:attributes value='#[&#10;	{&#10;		"uriParams": &#10;		{&#10;			"customerid" : 90&#10; 		}&#10;	}&#10;]' />
+				</munit:set-event>
+				<flow-ref doc:name="Flow-ref to get:\quotes\(customerid):Insurance-Process-API-config" doc:id="3199ec4c-5664-4d76-b4bd-601209111a00" name="get:\quotes\(customerid):Insurance-Process-API-config" />
+			</munit:execution>
+			<munit:validation>
+				<munit-tools:assert doc:name="Assert expression" doc:id="0bef822d-be39-4bb0-a3b7-33e37cd736f4">
+					<munit-tools:that><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload.message must notBeNull()]]]></munit-tools:that>
+				</munit-tools:assert>
+			</munit:validation>
+		</munit:test>
+	<munit:test name="Insurance-Process-API-test-suiteTest:BADREQ" doc:id="172884d8-8968-48be-9398-aa892846bedf" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="a1336d35-bcdf-4ab5-8b0e-10c37577f850" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="01c9aa08-5a50-4855-bdbc-af01fb21e8b6" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="HTTP:BAD_REQUEST" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="623eafa4-6263-4a69-8095-ba0bcf8148b0">
+				<munit:attributes value='#[&#10;	{&#10;		"uriParams": &#10;		{&#10;			"customerid" : 3&#10; 		}&#10;	}&#10;]' />
+			</munit:set-event>
+			<flow-ref doc:name="getQuotes" doc:id="16f33a50-0644-47c9-a002-0a5a1b028ea5" name="getQuotes"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="60efa1ea-6a23-4095-8a76-85adf3b37499" actual="#[payload.StatusCode]" expected='"400"'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="Insurance-Process-API-test-suiteTest:INTERNALSERVER" doc:id="c4cb5b4d-ae02-4112-bf3e-905565635a85" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="c9fbbc5b-9c0d-45f3-aa4b-0693c9f4ce3c" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="01c9aa08-5a50-4855-bdbc-af01fb21e8b6" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="HTTP:INTERNAL_SERVER_ERROR" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="82058d5c-8616-4aff-8678-fffa949fd8b8" >
+				<munit:attributes value='#[&#10;	{&#10;		"uriParams": &#10;		{&#10;			"customerid" : 3&#10; 		}&#10;	}&#10;]' />
+			</munit:set-event>
+			<flow-ref doc:name="getQuotes" doc:id="f0b2729b-db7f-4cec-b21d-0b54364fc8af" name="getQuotes" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="19137e88-4eb1-4d78-9a54-497181202591" actual="#[payload.StatusCode]" expected='"500"' />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="Insurance-Process-API-test-suiteTest:CONNECTIVITY" doc:id="054915c9-1f0c-4b25-813c-8feed7197757" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="0801fd00-9391-411e-8258-ae61b733b883" processor="http:request" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="01c9aa08-5a50-4855-bdbc-af01fb21e8b6" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="HTTP:CONNECTIVITY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="ed62b6be-ceb0-4988-83c5-5c2512b1b222" >
+				<munit:attributes value='#[&#10;	{&#10;		"uriParams": &#10;		{&#10;			"customerid" : 3&#10; 		}&#10;	}&#10;]' />
+			</munit:set-event>
+			<flow-ref doc:name="getQuotes" doc:id="f66dda0c-c962-4a69-8c4c-f9be9d4e383e" name="getQuotes" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="6cdabdab-3c31-46c2-bd37-c9508b437b66" actual="#[payload.StatusCode]" expected='"408"' />
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

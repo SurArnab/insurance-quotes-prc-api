@@ -1,0 +1,16 @@
+[
+  {
+    "policyno" : 123456,
+    "customerid" : 1,
+    "premium" : 12345.12,
+    "coverage" : 10000000.00,
+    "tenure" : 30
+  },
+  {
+    "policyno" : 123455,
+    "customerid" : 1,
+    "premium" : 12312.12,
+    "coverage" : 8000000.00,
+    "tenure" : 25
+  }
+]

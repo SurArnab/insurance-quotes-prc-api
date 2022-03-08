@@ -1,0 +1,7 @@
+%dw 2.0
+
+type auto_4b880fbf_6f88_43ce_86d1_108020888a02_Output_Payload = {|
+  StatusCode: String, 
+  ErrorMessage: String
+|}
+

@@ -1,0 +1,40 @@
+[
+    {
+        "coverage": 1.2E7,
+        "premiumage": 20,
+        "drinking": "Yes",
+        "description": "HDFC ERGO",
+        "illnesssurge": 8,
+        "policyno": 123458,
+        "minsalary": 30000.0,
+        "drinkingsurge": 5,
+        "maxage": 50,
+        "smokingsurge": 2,
+        "provider": "HDFC",
+        "minage": 20,
+        "surgeyears": 10,
+        "smoking": "Yes",
+        "agesurge": 4,
+        "basepremium": 12000.0,
+        "illness": "Yes"
+    },
+    {
+        "coverage": 1.5E7,
+        "premiumage": 25,
+        "drinking": "Yes",
+        "description": "Star Health",
+        "illnesssurge": 5,
+        "policyno": 123459,
+        "minsalary": 50000.0,
+        "drinkingsurge": 8,
+        "maxage": 40,
+        "smokingsurge": 0,
+        "provider": "StarHealth",
+        "minage": 20,
+        "surgeyears": 5,
+        "smoking": "No",
+        "agesurge": 8,
+        "basepremium": 15000.0,
+        "illness": "Yes"
+    }
+]

@@ -1,0 +1,32 @@
+#%RAML 1.0
+title: Insurance-Process-API
+description: This is Insurance API design get quotes from  external api by passing the customer id. Customer details can be fetched from customers in salesforce or database.
+baseUri: https://api.insurance.com/api/
+version: v1
+mediaType: 
+  - application/json
+protocols:
+  - HTTPS
+  - HTTP
+securitySchemes:
+  oauthSecurity : !include /securitySchemes/oauthSecurityScheme.raml
+
+traits:
+  errorResponse: !include /traits/errorResponseTraits.raml
+
+uses:
+  insurancedatatype: /datatype/insurance-sys-library.raml
+
+/quotes:
+  /{customerid}:
+    is: errorResponse
+    securedBy:
+      - oauthSecurity
+    get:
+      description: Get the customer quote details based on customer id
+      responses:
+        200:
+          body:
+            application/json:
+              type: insurancedatatype.customer[]
+              example: !include /example/getquote.json

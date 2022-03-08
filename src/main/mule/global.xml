@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<global-property doc:name="Global Property" doc:id="dee2c4e6-d620-4585-bd82-31984a89a46d" name="env" value="local" />
+	<configuration-properties doc:name="Configuration properties" doc:id="0f2468a5-a56c-4733-9beb-31648e8d46b2" file="secured_${env}_config.yaml" />
+	<configuration doc:name="Configuration" doc:id="8acf005c-7e32-4bd5-8c94-180b87e59d12" defaultErrorHandler-ref="globalError_Handler" />
+	<http:request-config name="Salesforce_sysapi_Request" doc:name="HTTP Request configuration" doc:id="d58b0100-aca2-4d82-ab73-5d6a01d95db8" basePath="${secure::salesforce.basepath}" >
+		<http:request-connection host="${secure::salesforce.host}" port="${secure::salesforce.port}" />
+	</http:request-config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="ef2b5873-f01d-4257-a964-e5557646d1ad" file="secured_${env}_config.yaml" key="insurance-api" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<http:request-config name="database_sysapi_Request" doc:name="HTTP Request configuration" doc:id="d4f0b711-669e-42a9-a86c-718a43e5b244" basePath="${secure::database.basepath}" >
+		<http:request-connection host="${secure::database.host}" port="${secure::database.port}" />
+	</http:request-config>
+	<http:request-config name="external_system_Request" doc:name="HTTP Request configuration" doc:id="b3b59379-9a3b-4bba-8767-1d23e5b6e6c7" >
+		<http:request-connection host="${secure::externalapi.host}" port="${secure::externalapi.port}" />
+	</http:request-config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="913580e7-795a-4280-912d-833d43d57771" >
+		<http:listener-connection host="0.0.0.0" port="${secure::http.port}" protocol="HTTPS">
+			<tls:context >
+				<tls:key-store type="jks" path="server-keystore.jks" keyPassword="changeit" password="changeit"/>
+			</tls:context>
+		</http:listener-connection>
+	</http:listener-config>
+	<api-gateway:autodiscovery apiId="${secure::api.autodiscovery}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="6faea456-38d5-43ad-80f0-88e233761e85" flowRef="Insurance-Process-API-main" />
+	<error-handler name="globalError_Handler" doc:id="42bd26c9-05e9-46a4-b8c5-4d74d6edafd7" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="38fb78d0-5b60-4664-9153-d8b1aa68fc1b" >
+			<logger level="INFO" doc:name="error Logger" doc:id="f58e8ed5-366c-43bc-965d-d6919c570ce9" message='"Error : " #[error.description]'/>
+			<ee:transform doc:name="Transform Message" doc:id="af775fc8-9132-49ed-b752-7e3cdb0534ad" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message" : error.description
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="httpStatus" ><![CDATA[500]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+	</error-handler>
+</mule>

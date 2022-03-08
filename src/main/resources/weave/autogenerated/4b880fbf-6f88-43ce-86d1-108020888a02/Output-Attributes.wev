@@ -1,0 +1,25 @@
+%dw 2.0
+
+type auto_4b880fbf_6f88_43ce_86d1_108020888a02_Output_Attributes = {|
+  remoteAddress?: String, 
+  localAddress?: String, 
+  clientCertificate?: {|
+    publicKey?: {|  |}, 
+    "type"?: String, 
+    encoded?: Binary
+  |}, 
+  uriParams?: {| customerid: String |}, 
+  queryParams?: {|  |}, 
+  statusCode?: Number, 
+  requestPath?: String, 
+  relativePath?: String, 
+  scheme?: String, 
+  version?: String, 
+  method?: String, 
+  reasonPhrase?: String, 
+  requestUri?: String, 
+  queryString?: String, 
+  headers: { _?: String }, 
+  listenerPath?: String
+|}
+
